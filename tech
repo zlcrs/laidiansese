@@ -1,0 +1,43 @@
+# 手动抓取视频的办法
+
+在 chaojipiantv123.buzz/ 进行实验，成功
+
+xzl 似乎会把 .ts 写作 .png，下载  m3u8 后将 png 替换为 ts 即可
+
+1. 获取 m3u8 流视频文件
+
+用 猫抓 插件爬取网站内容
+
+可能有多个m3u8，都下下来
+
+找那个有很多行 xxxxx.ts 的
+
+2. 处理 m3u8 文件
+
+对于直接标了绝对链接 https://xxxxx 的，不用处理
+
+有些是标了相对链接的。开 F12，点进 Network 界面，手动审查这些 .ts 文件，看看它们具体是哪个网站目录下的
+
+如某视频中它是 https://2.ddyunbo.com
+
+用 vim 的正则替换，把它们的前面加上这个
+
+3. 批量下载
+
+使用 uget 的 batch downloads 功能，下载所有的这些 ts 文件
+
+4. 用 ffmpeg 合并
+
+首先需要再处理一下链接文件
+
+ffmpeg 的链接文件格式为 file 'xxx.ts'
+
+由于是本地目录，前面的 https:// 就全都不用了，使用
+
+:%s/^.*\///g 删掉这些前缀
+
+然后 :%s/^/file '/g ，:%s/$/'/g 加上前后缀即可
+
+最后用链接文件指导 ffmpeg 合并，合并的命令为
+
+ffmpeg -f concat -safe 0 -i 链接文件 -vcodec copy -acodec copy 目标文件.mp4
